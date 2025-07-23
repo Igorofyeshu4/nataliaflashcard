@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Study - {{ deck.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="text-center mb-4">
+            <h2>{{ deck.name }}</h2>
+            <p class="text-muted">Click the card to reveal the answer</p>
+            <div class="progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+            </div>
+            <span id="cardCounter" class="text-muted">Card 1 of {{ deck.cards|length }}</span>
+        </div>
+
+        <div class="card flashcard shadow-lg" id="flashcard" onclick="flipCard()">
+            <div class="card-body text-center d-flex align-items-center justify-content-center" style="min-height: 300px;">
+                <div id="cardContent">
+                    <h4 class="card-title">Question</h4>
+                    <p class="card-text fs-5" id="cardText">{{ deck.cards[0].question }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-secondary me-2" id="prevBtn" onclick="previousCard()" disabled>
+                <i class="fas fa-chevron-left me-1"></i>Previous
+            </button>
+            <button class="btn btn-primary me-2" id="flipBtn" onclick="flipCard()">
+                <i class="fas fa-sync-alt me-1"></i>Flip Card
+            </button>
+            <button class="btn btn-outline-secondary" id="nextBtn" onclick="nextCard()">
+                Next<i class="fas fa-chevron-right ms-1"></i>
+            </button>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('view_deck', deck_id=deck.id) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Deck
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+const cards = {{ deck.cards | tojson }};
+let currentCard = 0;
+let showingAnswer = false;
+
+function updateCard() {
+    const card = cards[currentCard];
+    const cardText = document.getElementById('cardText');
+    const cardTitle = document.querySelector('#cardContent h4');
+    
+    if (showingAnswer) {
+        cardTitle.textContent = 'Answer';
+        cardTitle.className = 'card-title text-success';
+        cardText.textContent = card.answer;
+    } else {
+        cardTitle.textContent = 'Question';
+        cardTitle.className = 'card-title text-primary';
+        cardText.textContent = card.question;
+    }
+    
+    // Update counter and progress
+    document.getElementById('cardCounter').textContent = `Card ${currentCard + 1} of ${cards.length}`;
+    const progress = ((currentCard + 1) / cards.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    
+    // Update button states
+    document.getElementById('prevBtn').disabled = currentCard === 0;
+    document.getElementById('nextBtn').disabled = currentCard === cards.length - 1;
+    
+    // Update flip button text
+    document.getElementById('flipBtn').innerHTML = showingAnswer ? 
+        '<i class="fas fa-sync-alt me-1"></i>Show Question' : 
+        '<i class="fas fa-sync-alt me-1"></i>Show Answer';
+}
+
+function flipCard() {
+    showingAnswer = !showingAnswer;
+    updateCard();
+}
+
+function nextCard() {
+    if (currentCard < cards.length - 1) {
+        currentCard++;
+        showingAnswer = false;
+        updateCard();
+    }
+}
+
+function previousCard() {
+    if (currentCard > 0) {
+        currentCard--;
+        showingAnswer = false;
+        updateCard();
+    }
+}
+
+// Initialize
+updateCard();
+</script>
+{% endblock %}

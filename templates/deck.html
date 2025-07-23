@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ deck.name }} - Natalia's Flashcards{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="display-5">{{ deck.name }}</h1>
+                {% if deck.description %}
+                <p class="lead text-muted">{{ deck.description }}</p>
+                {% endif %}
+                <p class="text-muted">
+                    <i class="fas fa-layer-group me-1"></i>{{ deck.cards|length }} cards
+                </p>
+            </div>
+            <div class="btn-group">
+                {% if deck.cards %}
+                <a href="{{ url_for('study_deck', deck_id=deck.id) }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-play me-1"></i>Study Deck
+                </a>
+                {% endif %}
+                <a href="{{ url_for('add_card', deck_id=deck.id) }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Add Card
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash me-1"></i>Delete Deck
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if deck.cards %}
+<div class="row">
+    {% for card in deck.cards %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title text-primary">Question:</h6>
+                <p class="card-text">{{ card.question }}</p>
+                <h6 class="card-title text-success mt-3">Answer:</h6>
+                <p class="card-text">{{ card.answer }}</p>
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('delete_card', card_id=card.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                            onclick="return confirm('Delete this card?')">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-cards-blank fa-5x text-muted mb-3"></i>
+    <h3 class="text-muted">No cards yet</h3>
+    <p class="text-muted">Add your first card to start studying!</p>
+    <a href="{{ url_for('add_card', deck_id=deck.id) }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus me-2"></i>Add First Card
+    </a>
+</div>
+{% endif %}
+
+<!-- Delete Deck Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Deck</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<strong>{{ deck.name }}</strong>" and all its cards?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('delete_deck', deck_id=deck.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete Deck</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
